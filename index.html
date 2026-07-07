@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#121212">
+<title>Project Health</title>
+<style>
+:root{
+  --bg:#111217;--card:#1f2230;--soft:#2b3042;--text:#f7f7fb;--muted:#b7bdd1;
+  --accent:#8fd3ff;--good:#9be59b;--warn:#ffd27d;--pink:#ffb3d1;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);padding:16px;max-width:760px;margin:auto}
+h1{font-size:28px;margin:8px 0 0}
+h2{font-size:20px;margin:0 0 10px}
+h3{font-size:16px;margin:14px 0 6px;color:var(--accent)}
+p{color:var(--muted);line-height:1.45}
+.card{background:var(--card);border-radius:18px;padding:16px;margin:14px 0;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.badge{background:var(--soft);padding:8px 10px;border-radius:999px;color:var(--accent);font-weight:bold;font-size:13px}
+.progressWrap{background:var(--soft);height:18px;border-radius:999px;overflow:hidden;margin:10px 0}
+.progressFill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--good));border-radius:999px;transition:.25s}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--soft);border-radius:14px;padding:12px;text-align:center}
+.stat strong{display:block;font-size:23px}
+button{border:0;border-radius:12px;padding:11px 14px;background:var(--accent);color:#08111a;font-weight:bold;font-size:15px}
+button.secondary{background:var(--soft);color:var(--text)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.tapbtn{flex:1;min-width:72px}
+label{display:flex;align-items:center;gap:10px;padding:9px 0;font-size:16px;color:var(--text)}
+input[type=checkbox]{width:22px;height:22px}
+input[type=number],textarea{width:100%;background:var(--soft);color:var(--text);border:1px solid #3c4258;border-radius:12px;padding:12px;font-size:16px}
+.small{font-size:13px;color:var(--muted)}
+.complete{color:var(--good);font-weight:bold}
+.warn{color:var(--warn)}
+.footer{height:28px}
+</style>
+</head>
+<body>
+<div class="top">
+  <div>
+    <h1>💙 Project Health</h1>
+    <p id="dateLine" class="small"></p>
+  </div>
+  <div class="badge" id="countdown">Surgery countdown</div>
+</div>
+
+<div class="card">
+  <h2>Today’s Progress</h2>
+  <div class="progressWrap"><div class="progressFill" id="progressFill"></div></div>
+  <p><span id="progressText">0%</span> complete · <span id="focusText">Start with protein + water.</span></p>
+  <div class="grid">
+    <div class="stat"><strong id="streak">0</strong><span class="small">day streak</span></div>
+    <div class="stat"><strong id="doneCount">0/0</strong><span class="small">checks done</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>🍗 Protein Tracker</h2>
+  <div class="grid">
+    <div class="stat"><strong id="proteinTotal">0g</strong><span class="small">goal 150–170g</span></div>
+    <div class="stat"><strong id="proteinStatus">Start</strong><span class="small">status</span></div>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <button class="tapbtn" onclick="addProtein(10)">+10g</button>
+    <button class="tapbtn" onclick="addProtein(20)">+20g</button>
+    <button class="tapbtn" onclick="addProtein(30)">+30g</button>
+    <button class="tapbtn secondary" onclick="addProtein(-10)">-10g</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>💧 Water Tracker</h2>
+  <p class="small">Goal: 3–4 liters. Tap +0.5 L each time.</p>
+  <div class="grid">
+    <div class="stat"><strong id="waterTotal">0 L</strong><span class="small">goal 3–4 L</span></div>
+    <div class="stat"><strong id="waterStatus">Start</strong><span class="small">status</span></div>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <button class="tapbtn" onclick="addWater(.5)">+0.5 L</button>
+    <button class="tapbtn secondary" onclick="addWater(-.5)">-0.5 L</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>✅ Daily Checklist</h2>
+  <h3>🌅 Morning</h3>
+  <label><input type="checkbox" class="check" id="m_shake"> Protein shake + 1 tbsp chia</label>
+  <label><input type="checkbox" class="check" id="m_creatine"> Creatine</label>
+  <label><input type="checkbox" class="check" id="m_mobility"> 10–15 min mobility</label>
+  <label><input type="checkbox" class="check" id="m_plan"> Pick today’s protein strategy</label>
+
+  <h3>🚢 During Work</h3>
+  <label><input type="checkbox" class="check" id="w_lunch"> Lunch: protein + vegetables</label>
+  <label><input type="checkbox" class="check" id="w_water"> Stay on water goal</label>
+  <label><input type="checkbox" class="check" id="w_sauces"> Skip bread/rice/pasta/dessert</label>
+  <label><input type="checkbox" class="check" id="w_steps"> 10k–15k steps/work movement</label>
+
+  <h3>🌙 Evening</h3>
+  <label><input type="checkbox" class="check" id="e_dinner"> Dinner: protein + vegetables</label>
+  <label><input type="checkbox" class="check" id="e_stretch"> Evening stretch</label>
+  <label><input type="checkbox" class="check" id="e_mag"> Magnesium/electrolytes</label>
+  <label><input type="checkbox" class="check" id="e_workout"> Strength workout if scheduled</label>
+</div>
+
+<div class="card">
+  <h2>🚢 Buffet Builder</h2>
+  <p class="small">Tap what’s available today.</p>
+  <label><input type="checkbox" class="buffet" id="b_lean"> Lean protein: chicken breast, turkey, lean roast, ham</label>
+  <label><input type="checkbox" class="buffet" id="b_fatty"> Fattier protein: thighs, meatballs, pulled pork, ground beef</label>
+  <label><input type="checkbox" class="buffet" id="b_eggs"> Eggs or Greek yogurt available</label>
+  <label><input type="checkbox" class="buffet" id="b_veg"> Non-starchy vegetables/salad available</label>
+  <p id="plateAdvice" class="complete">Tap options for today’s plate advice.</p>
+</div>
+
+<div class="card">
+  <h2>📊 Quick Progress Log</h2>
+  <p class="small">Optional. Saves on this phone only.</p>
+  <label>Weight</label>
+  <input type="number" id="weight" placeholder="Example: 160">
+  <label>Waist</label>
+  <input type="number" id="waist" placeholder="Example: 31">
+  <label>Energy 1–10</label>
+  <input type="number" id="energy" min="1" max="10" placeholder="Example: 7">
+  <label>Notes</label>
+  <textarea id="notes" rows="3" placeholder="How did today feel?"></textarea>
+</div>
+
+<div class="card">
+  <h2>🔄 Start New Day</h2>
+  <p class="small">This clears today’s checkboxes, protein, water, and buffet selections. It keeps your streak if yesterday was complete.</p>
+  <button onclick="newDay()">Start New Day</button>
+  <button class="secondary" onclick="hardReset()">Reset Everything</button>
+</div>
+
+<div class="footer"></div>
+
+<script>
+const SURGERY_DATE = new Date("2026-08-05T00:00:00");
+const todayKey = () => new Date().toISOString().slice(0,10);
+const $ = id => document.getElementById(id);
+
+function loadNum(key, fallback=0){ return Number(localStorage.getItem(key) || fallback); }
+function saveNum(key, val){ localStorage.setItem(key, String(val)); }
+
+let protein = loadNum("protein",0);
+let water = loadNum("water",0);
+
+function setDateLine(){
+  const now = new Date();
+  $("dateLine").textContent = now.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"});
+  const diff = Math.ceil((SURGERY_DATE - now)/(1000*60*60*24));
+  $("countdown").textContent = diff >= 0 ? `${diff} days to surgery` : `Recovery mode`;
+}
+function addProtein(n){
+  protein = Math.max(0, Math.min(220, protein+n));
+  saveNum("protein",protein); render();
+}
+function addWater(n){
+  water = Math.max(0, Math.min(6, +(water+n).toFixed(1)));
+  saveNum("water",water); render();
+}
+function render(){
+  $("proteinTotal").textContent = `${protein}g`;
+  $("proteinStatus").textContent = protein >= 150 ? "Green ✅" : protein >= 100 ? "Close" : "Build";
+  $("proteinStatus").className = protein >= 150 ? "complete" : "warn";
+  $("waterTotal").textContent = `${water} L`;
+  $("waterStatus").textContent = water >= 3 ? "Green ✅" : water >= 2 ? "Close" : "Build";
+  $("waterStatus").className = water >= 3 ? "complete" : "warn";
+
+  const checks = [...document.querySelectorAll(".check")];
+  const done = checks.filter(c=>c.checked).length + (protein>=150?1:0) + (water>=3?1:0);
+  const total = checks.length + 2;
+  const pct = Math.round(done/total*100);
+  $("progressFill").style.width = pct + "%";
+  $("progressText").textContent = pct + "%";
+  $("doneCount").textContent = `${done}/${total}`;
+  $("focusText").textContent = pct>=90 ? "Amazing. Finish strong." : pct>=60 ? "You’re on track." : "Start with protein + water.";
+  $("streak").textContent = localStorage.getItem("streak") || "0";
+  renderPlateAdvice();
+}
+function renderPlateAdvice(){
+  const lean=$("b_lean").checked, fatty=$("b_fatty").checked, veg=$("b_veg").checked, eggs=$("b_eggs").checked;
+  let msg="Tap options for today’s plate advice.";
+  if(lean && veg) msg="Best option: 2 palm-sized lean protein servings + half plate vegetables.";
+  else if(fatty && veg) msg="Good enough: 1.5–2 palms protein, trim visible fat, skip sauces + half plate vegetables.";
+  else if(eggs) msg="Use eggs/yogurt as backup protein, then add a shake if needed.";
+  else if(lean || fatty) msg="Protein first. Add vegetables if available and skip starches.";
+  $("plateAdvice").textContent = msg;
+}
+function saveChecks(){
+  document.querySelectorAll("input[type=checkbox]").forEach(c=>localStorage.setItem(c.id,c.checked?"1":"0"));
+}
+function loadChecks(){
+  document.querySelectorAll("input[type=checkbox]").forEach(c=>{
+    c.checked = localStorage.getItem(c.id)==="1";
+    c.addEventListener("change",()=>{saveChecks();render();});
+  });
+}
+function loadInputs(){
+  ["weight","waist","energy","notes"].forEach(id=>{
+    const e=$(id); e.value=localStorage.getItem(id)||"";
+    e.addEventListener("input",()=>localStorage.setItem(id,e.value));
+  });
+}
+function newDay(){
+  const checks=[...document.querySelectorAll(".check")];
+  const complete = (checks.filter(c=>c.checked).length + (protein>=150?1:0) + (water>=3?1:0)) >= checks.length+2;
+  if(complete){
+    const last=localStorage.getItem("lastCompleteDay");
+    if(last !== todayKey()){
+      localStorage.setItem("streak", String((Number(localStorage.getItem("streak")||0))+1));
+      localStorage.setItem("lastCompleteDay", todayKey());
+    }
+  }
+  document.querySelectorAll("input[type=checkbox]").forEach(c=>{c.checked=false;localStorage.removeItem(c.id);});
+  protein=0; water=0; saveNum("protein",0); saveNum("water",0);
+  render();
+}
+function hardReset(){
+  if(confirm("Reset all saved Project Health data on this phone?")){
+    localStorage.clear(); location.reload();
+  }
+}
+loadChecks(); loadInputs(); setDateLine(); render();
+if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js");}
+</script>
+</body>
+</html>
